@@ -9,31 +9,49 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Dependencies (CI)') {
             steps {
-                sh 'npm install'
+                sh '''
+                echo "=== Installing dependencies in Jenkins workspace ==="
+                npm install
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'npm test'
+                sh '''
+                echo "=== Running tests ==="
+                npm test
+                '''
             }
         }
 
         stage('Sanity Start') {
             steps {
-                sh 'timeout 5s npm start || true'
+                sh '''
+                echo "=== Sanity start (5 seconds) ==="
+                timeout 5s npm start || true
+                '''
             }
         }
 
-        stage('Deploy with PM2') {
+        stage('Deploy to Server') {
             steps {
                 sh '''
-                pm2 describe url-shortner >/dev/null 2>&1 || \
-                pm2 start index.js --name url-shortner
+                echo "=== Syncing code to deploy directory ==="
 
-                pm2 restart url-shortner
+                rsync -av --delete \
+                  --exclude=node_modules \
+                  --exclude=.git \
+                  ./ /var/www/url-shortner-deploy/
+
+                echo "=== Installing dependencies in deploy directory ==="
+                cd /var/www/url-shortner-deploy
+                npm install
+
+                echo "=== Restarting application with PM2 ==="
+                pm2 restart ecosystem.config.cjs || pm2 start ecosystem.config.cjs
                 '''
             }
         }
