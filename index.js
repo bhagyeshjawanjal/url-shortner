@@ -9,7 +9,7 @@ dotenv.config();
 
 const app = express();
 
-var port = process.env.PORT;
+var port = process.env.PORT || 3000;
 
 app.use(express.json());
 
