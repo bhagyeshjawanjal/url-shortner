@@ -41,7 +41,7 @@ function generateUserJWTAccessToken(aTokenayload) {
 
     const accessToken = jwt.sign(payload, sClientSecret, { algorithm: 'HS256' });
 
-    return {'sToken':accessToken, 'newDeployment': 100};
+    return {'sToken':accessToken, 'newDeployment': 1000};
 }
 
 async function getClientDetailsByID(iClientID){
