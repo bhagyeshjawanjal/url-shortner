@@ -1,4 +1,4 @@
-CREATE TABLE `service_clients` (
+CREATE TABLE `short_url_service_clients` (
   `client_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `client_key` varchar(255) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE `service_clients` (
   KEY `added_by` (`added_by`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 
-CREATE TABLE `short_urls` (
+CREATE TABLE `mxcel_short_urls` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `client_id` int(11) NOT NULL,
   `original_url` text NOT NULL,

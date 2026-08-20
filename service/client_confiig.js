@@ -3,17 +3,17 @@ import { randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken';
 import {Base64} from 'js-base64';
 
-function generateUserJWTAccessToken(aTokenayload) {
+function generateUserJWTAccessToken(aTokenPayload) {
     const aErrorResponse = {
         'code': 400
     }
     const now = new Date();
     let expiryInMinutes = "60";
     const future = new Date(now.getTime() + (expiryInMinutes * 60000));
-    let sClientKey = aTokenayload.client_key !== null ? aTokenayload.client_key : '';
-    let sClientSecret = aTokenayload.client_secret !== null ? aTokenayload.client_secret : '';
+    let sClientKey = aTokenPayload.client_key !== null ? aTokenPayload.client_key : '';
+    let sClientSecret = aTokenPayload.client_secret !== null ? aTokenPayload.client_secret : '';
 
-    if(Object.keys(aTokenayload).length === 0){
+    if(Object.keys(aTokenPayload).length === 0){
         return {
             status: 'error',
             message: 'Request body must not be empty',

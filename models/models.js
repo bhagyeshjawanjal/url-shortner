@@ -8,12 +8,12 @@ async function InsertShortUrl(clientId=0, sOriginalUrl, sShortUrl, iClickCount=0
         const connection = await connectionPromise;
 
 		const query = `
-		    INSERT INTO short_urls 
+		    INSERT INTO mxcel_short_urls 
 		    (client_id, original_url, short_code, click_count, created_at) 
 		    VALUES (?, ?, ?, ?, ?)
 		`;
 
-		const params = [1, sOriginalUrl, sShortUrl, iClickCount, dAddedOn];
+		const params = [clientId, sOriginalUrl, sShortUrl, iClickCount, dAddedOn];
 
 		const [result] = await connection.execute(query, params);
 
@@ -32,7 +32,7 @@ async function getUrlAndIncrementClick(clientId, shortCode) {
 
   const selectQuery = `
     SELECT id, original_url
-    FROM short_urls
+    FROM mxcel_short_urls
     WHERE client_id = ? AND short_code = ?
     LIMIT 1
   `;
@@ -47,7 +47,7 @@ async function getUrlAndIncrementClick(clientId, shortCode) {
   const originalUrl = rows[0].original_url;
 
   const updateQuery = `
-    UPDATE short_urls
+    UPDATE mxcel_short_urls
     SET click_count = click_count + 1
     WHERE id = ?
   `;

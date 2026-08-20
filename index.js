@@ -41,7 +41,7 @@ app.get("/:clientId/:shortCode", async (req, res) => {
         const result = await service.getUrlAndIncrementClick(clientId, shortCode);
 
         if (result.error) {
-            return res.status(result.error_code).send(result.message);
+            return res.status(result.error_code).send(result);
         }
 
         return res.redirect(result.original_url);

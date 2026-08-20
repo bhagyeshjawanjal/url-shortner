@@ -5,7 +5,7 @@ async function getClientByClientKey(sClientKey) {
     try {
         const connection = await connectionPromise;
         const [results, fields] = await connection.execute(
-            'SELECT * FROM `service_clients` WHERE client_key = ?',
+            'SELECT * FROM `short_url_service_clients` WHERE client_key = ?',
             [sClientKey]
         );
         return results[0];
@@ -20,7 +20,7 @@ async function getClientDetailsByID(iClientID) {
     try {
         const connection = await connectionPromise;
         const [results, fields] = await connection.execute(
-            'SELECT client_key, client_secret FROM `service_clients` WHERE client_id = ?',
+            'SELECT client_key, client_secret FROM `short_url_service_clients` WHERE client_id = ?',
             [iClientID]
         );
         return results[0];
@@ -34,7 +34,7 @@ async function getClientDetails() {
     try {
         const connection = await connectionPromise;
         const [results, fields] = await connection.execute(
-            'SELECT client_id, name, callback_url FROM `service_clients` WHERE status = 1'
+            'SELECT client_id, name, callback_url FROM `short_url_service_clients` WHERE status = 1'
         );
         return results;
     } catch (err) {
@@ -50,7 +50,7 @@ async function addClientDetails(aClientRequest) {
     try {
         const connection = await connectionPromise;
         const [result] = await connection.execute(
-            'INSERT INTO `service_clients` (name, client_key, client_secret, callback_url, added_on, added_by, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO `short_url_service_clients` (name, client_key, client_secret, callback_url, added_on, added_by, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [
                 aClientRequest.client_name,
                 aClientRequest.client_key,

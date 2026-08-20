@@ -49,15 +49,19 @@ async function generateAndSaveURl(req, res){
 async function getUrlAndIncrementClick(iClientID, shortCode) {
 
   // Basic validation
-  // if (iClientID <= 0) {
-  //   return { error: true, error_code: 400, message: "Invalid client ID" };
-  // }
+  if (iClientID <= 0) {
+    return { error: true, error_code: 400, message: "Invalid client ID" };
+  }
 
-  // if (!shortCode) {
-  //   return { error: true, error_code: 400, message: "Original URL required" };
-  // }
+  if (!shortCode) {
+    return { error: true, error_code: 400, message: "Original URL required" };
+  }
 
   const originalUrl = await models.getUrlAndIncrementClick(iClientID, shortCode);
+
+  if (!originalUrl) {
+    return { error: true, error_code: 404, message: "Short URL not found" };
+  }
 
   return originalUrl;
 }
