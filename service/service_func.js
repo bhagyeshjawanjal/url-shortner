@@ -1,14 +1,21 @@
 import * as models from "../models/models.js";
+import * as clickBuffer from "./click_buffer.js";
+import { randomInt } from "node:crypto";
 import dotenv from "dotenv";
 
-function generateShortCode(length = 6) {
+const CODE_LENGTH = 6;
+
+// How many times a duplicate code is regenerated before giving up.
+const MAX_INSERT_ATTEMPTS = 5;
+
+function generateShortCode(length = CODE_LENGTH) {
 
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
   let code = "";
 
   for (let i = 0; i < length; i++) {
-    const index = Math.floor(Math.random() * chars.length);
+    const index = randomInt(chars.length);
     code += chars[index];
   }
 
@@ -21,7 +28,6 @@ async function generateAndSaveURl(req, res){
 
   let iClientID = req.iClientID ?? 0;
   let sOriginalUrl = req.sOriginalUrl ?? '';
-  let urlCode = generateShortCode();
 
   if (!sOriginalUrl) {
     return res.status(400).send({ error: true, message: "Original URL required" });
@@ -29,21 +35,34 @@ async function generateAndSaveURl(req, res){
 
   let iClickCount = 0;
 
-  let iInserID = await models.InsertShortUrl(iClientID, sOriginalUrl, urlCode, iClickCount);
+  for (let iAttempt = 0; iAttempt < MAX_INSERT_ATTEMPTS; iAttempt++) {
 
-  const shortUrl = `${process.env.BASE_URL}/${iClientID}/${urlCode}`;
+    let urlCode = generateShortCode();
+    let iInserID;
 
-  if(iInserID > 0){
-    return{
-      success: true,
-      short_url: shortUrl
-    };
-  }else{
-    return{
-      error: true,
-      message: "Error while creating url"
-    };
+    try {
+      iInserID = await models.InsertShortUrl(iClientID, sOriginalUrl, urlCode, iClickCount);
+    } catch (error) {
+      if (error.duplicate) {
+        continue; // code already taken for this client, generate another one
+      }
+      throw error;
+    }
+
+    if (iInserID > 0) {
+      return{
+        success: true,
+        short_url: `${process.env.BASE_URL}/${iClientID}/${urlCode}`
+      };
+    }
+
+    break; // insert failed for a non-retryable reason
   }
+
+  return{
+    error: true,
+    message: "Error while creating url"
+  };
 }
 
 async function getUrlAndIncrementClick(iClientID, shortCode) {
@@ -57,17 +76,21 @@ async function getUrlAndIncrementClick(iClientID, shortCode) {
     return { error: true, error_code: 400, message: "Original URL required" };
   }
 
-  const originalUrl = await models.getUrlAndIncrementClick(iClientID, shortCode);
+  const oUrl = await models.getUrlByShortCode(iClientID, shortCode);
 
-  if (!originalUrl) {
+  if (!oUrl) {
     return { error: true, error_code: 404, message: "Short URL not found" };
   }
 
-  return originalUrl;
+  // Counted in memory and flushed in batches, so the redirect isn't blocked on a write.
+  clickBuffer.record(oUrl.id);
+
+  return { original_url: oUrl.original_url };
 }
 
 
 export{
+  generateShortCode,
   generateAndSaveURl,
   getUrlAndIncrementClick
 }
